@@ -1,0 +1,958 @@
+<title>Multiscaling Notebook</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#f3f4f0;
+  --surface:#fbfbf8;
+  --surface-2:#eceee7;
+  --ink:#1b2320;
+  --ink-soft:#3c4541;
+  --ink-mute:#6a736d;
+  --border:#d7dace;
+  --accent:#9c6a1f;
+  --accent-ink:#7a5218;
+  --developed:#2f6e74;
+  --emerging:#ab4b2c;
+  --nullref:#8b8d85;
+  --code-bg:#eceee7;
+  --ok:#3a7a4e;
+  --shadow: 0 1px 2px rgba(20,24,20,0.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151a; --surface:#171c22; --surface-2:#1d2329;
+    --ink:#e7e6df; --ink-soft:#c4c7c0; --ink-mute:#8d958e;
+    --border:#2a3138; --accent:#e0a94a; --accent-ink:#f0c178;
+    --developed:#5fa8ad; --emerging:#e0865b; --nullref:#7c847e;
+    --code-bg:#1d2329; --ok:#6cbf86; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151a; --surface:#171c22; --surface-2:#1d2329;
+  --ink:#e7e6df; --ink-soft:#c4c7c0; --ink-mute:#8d958e;
+  --border:#2a3138; --accent:#e0a94a; --accent-ink:#f0c178;
+  --developed:#5fa8ad; --emerging:#e0865b; --nullref:#7c847e;
+  --code-bg:#1d2329; --ok:#6cbf86; --shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+*{box-sizing:border-box;}
+body{background:var(--bg); color:var(--ink); font-family:'Spectral',Georgia,'Times New Roman',serif; font-size:17px; line-height:1.62; margin:0; padding:0 20px;}
+::selection{background:var(--accent); color:var(--surface);}
+a{color:var(--accent-ink); text-decoration-thickness:1px; text-underline-offset:2px;}
+
+.shell{max-width:1180px; margin:0 auto; display:grid; grid-template-columns:230px minmax(0,740px); gap:56px; padding-block:48px 100px; justify-content:center;}
+@media (max-width: 980px){ .shell{grid-template-columns:minmax(0,1fr); gap:0;} nav.toc{display:none;} details.toc-mobile{display:block !important;} }
+
+.masthead{grid-column:1/-1; max-width:740px; margin:0 auto; padding-bottom:8px;}
+.kicker{font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-ink); margin-bottom:14px; display:flex; gap:10px; align-items:center;}
+.kicker::before{content:"§";}
+h1.title{font-size:clamp(2.1rem, 4vw, 2.9rem); font-weight:700; line-height:1.08; margin:0 0 14px; text-wrap:balance; letter-spacing:-0.01em;}
+.dek{font-size:1.18rem; color:var(--ink-soft); font-style:italic; max-width:62ch; margin:0 0 22px;}
+.meta-row{display:flex; flex-wrap:wrap; gap:18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-mute); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding-block:12px; margin-bottom:8px;}
+.meta-row b{color:var(--ink-soft); font-weight:600;}
+.howto{font-size:0.92rem; color:var(--ink-mute); max-width:62ch; margin:14px 0 0;}
+.howto b{color:var(--ink-soft);}
+
+nav.toc{position:sticky; top:40px; align-self:start; font-family:'IBM Plex Mono',monospace; font-size:12.3px;}
+nav.toc .toc-h{text-transform:uppercase; letter-spacing:.12em; color:var(--ink-mute); margin-bottom:10px; font-size:11px;}
+nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:toc;}
+nav.toc li{counter-increment:toc; margin-bottom:3px;}
+nav.toc a{display:block; color:var(--ink-soft); text-decoration:none; padding:4px 0 4px 22px; position:relative; border-radius:3px; line-height:1.35;}
+nav.toc a::before{content:counter(toc,decimal-leading-zero); position:absolute; left:0; color:var(--ink-mute); font-size:11px;}
+nav.toc a:hover{color:var(--accent-ink);}
+
+details.toc-mobile{display:none; margin:0 0 28px; border:1px solid var(--border); border-radius:8px; background:var(--surface);}
+details.toc-mobile summary{padding:12px 16px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:.1em; cursor:pointer; color:var(--ink-soft);}
+details.toc-mobile nav{padding:0 16px 16px;}
+details.toc-mobile nav ol{list-style:none; margin:0; padding:0;}
+details.toc-mobile nav a{display:block; padding:5px 0; color:var(--ink-soft); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:13px;}
+
+article{min-width:0;}
+section{margin-bottom:56px; scroll-margin-top:28px;}
+section > .tag{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent-ink); margin-bottom:6px; display:block;}
+h2{font-size:1.65rem; font-weight:700; line-height:1.2; margin:0 0 18px; text-wrap:balance; border-bottom:1px solid var(--border); padding-bottom:12px;}
+h3{font-size:1.18rem; font-weight:600; margin:28px 0 10px; color:var(--ink);}
+p{margin:0 0 16px; max-width:68ch;}
+.lede{font-size:1.05rem; color:var(--ink-soft);}
+strong{font-weight:600; color:var(--ink);}
+em{font-style:italic;}
+
+ul,ol.plain{margin:0 0 16px; padding-left:1.3em; max-width:66ch;}
+ul li, ol.plain li{margin-bottom:7px;}
+
+code{font-family:'IBM Plex Mono',monospace; font-size:0.86em; background:var(--code-bg); padding:.12em .4em; border-radius:4px; color:var(--ink);}
+
+.eqblock{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 20px; margin:0 0 18px; font-family:'IBM Plex Mono',monospace; font-size:0.95em; overflow-x:auto; box-shadow:var(--shadow);}
+.eqblock .lbl{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-mute); margin-bottom:8px; font-family:'IBM Plex Mono',monospace;}
+
+.callout{background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--developed); border-radius:8px; padding:16px 20px; margin:0 0 20px; box-shadow:var(--shadow);}
+.callout.warn{border-left-color:var(--emerging);}
+.callout.why{border-left-color:var(--accent);}
+.callout .lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-mute); display:block; margin-bottom:6px;}
+.callout p:last-child{margin-bottom:0;}
+
+.figure{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 18px 10px; margin:4px 0 22px; box-shadow:var(--shadow);}
+.figure svg{width:100%; height:auto; display:block;}
+figcaption{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-mute); padding:10px 2px 2px; line-height:1.5;}
+figcaption b{color:var(--ink-soft); font-weight:600;}
+
+.legend{display:flex; flex-wrap:wrap; gap:16px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); padding:0 2px 6px;}
+.legend span{display:inline-flex; align-items:center; gap:6px;}
+.swatch{width:11px; height:11px; border-radius:2px; display:inline-block;}
+
+table{width:100%; border-collapse:collapse; margin:0 0 20px; font-size:0.92rem;}
+table caption{text-align:left; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-mute); margin-bottom:8px; caption-side:top;}
+th,td{text-align:left; padding:8px 12px; border-bottom:1px solid var(--border); font-variant-numeric:tabular-nums;}
+th{font-family:'IBM Plex Mono',monospace; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-mute); font-weight:600;}
+td.num, th.num{text-align:right;}
+.tblwrap{overflow-x:auto; margin-bottom:20px;}
+
+.func{border:1px solid var(--border); border-radius:8px; padding:14px 18px; margin-bottom:14px; background:var(--surface);}
+.func h4{margin:0 0 6px; font-family:'IBM Plex Mono',monospace; font-size:0.98rem; font-weight:600; color:var(--ink);}
+.func .does{margin:0 0 8px; color:var(--ink-soft);}
+.func .why{margin:0; font-size:0.93rem; color:var(--ink-mute);}
+.func .why b{color:var(--ink-soft);}
+
+.buildrow{display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:20px;}
+.buildcard{border:1px solid var(--border); border-radius:8px; padding:16px 18px; background:var(--surface); display:grid; grid-template-columns:150px 1fr; gap:16px; align-items:start;}
+.buildcard .from{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent-ink); line-height:1.4;}
+.buildcard p{margin:0; font-size:0.95rem;}
+@media (max-width:620px){.buildcard{grid-template-columns:1fr;}}
+
+.endnote{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink-mute); border-top:1px solid var(--border); padding-top:20px; margin-top:12px;}
+.endnote a{color:var(--ink-mute);}
+
+/* ---------- glossary tooltip ---------- */
+.gloss{border-bottom:1.5px dotted var(--ink-mute); cursor:help; position:relative; font-weight:500;}
+.gloss .tip{display:none; position:absolute; left:0; bottom:135%; z-index:8; width:max-content; max-width:270px; background:var(--ink); color:var(--bg); font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.45; padding:9px 11px; border-radius:7px; box-shadow:0 4px 14px rgba(0,0,0,0.25); font-style:normal;}
+.gloss:hover .tip, .gloss:focus .tip{display:block;}
+.gloss:focus{outline:2px solid var(--accent); outline-offset:2px;}
+
+/* ---------- progressive disclosure ---------- */
+details.reveal{border:1px solid var(--border); border-radius:8px; margin:4px 0 18px; background:var(--surface); overflow:hidden;}
+details.reveal + details.reveal{margin-top:-10px;}
+details.reveal>summary{cursor:pointer; padding:11px 16px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--accent-ink); list-style:none; display:flex; align-items:center; gap:9px; user-select:none;}
+details.reveal>summary::-webkit-details-marker{display:none;}
+details.reveal>summary::before{content:"+"; font-weight:700; width:12px; display:inline-block;}
+details.reveal[open]>summary::before{content:"\2212";}
+details.reveal .inner{padding:2px 18px 16px; border-top:1px solid var(--border);}
+details.reveal .inner p:last-child{margin-bottom:0;}
+details.nested{margin:10px 0 0; background:var(--surface-2);}
+
+/* ---------- interactive widgets ---------- */
+.widget{border:1px solid var(--border); border-radius:10px; padding:18px 20px 14px; background:var(--surface); margin:6px 0 22px; box-shadow:var(--shadow);}
+.widget .wlabel{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-mute); margin-bottom:10px;}
+.widget .row{display:flex; flex-wrap:wrap; gap:22px; margin-bottom:14px;}
+.widget label{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); display:flex; flex-direction:column; gap:6px; flex:1; min-width:200px;}
+.widget input[type=range]{width:100%; accent-color:var(--accent);}
+.readouts{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;}
+.readout{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--ink); background:var(--surface-2); border-radius:6px; padding:9px 13px; display:flex; gap:8px; align-items:baseline; flex:1; min-width:150px;}
+.readout .k{color:var(--ink-mute); font-size:11px;}
+.readout b{color:var(--accent-ink); font-variant-numeric:tabular-nums; font-size:14px;}
+.widget .note{font-size:0.88rem; color:var(--ink-mute); margin:8px 0 0; max-width:none;}
+button.toybtn{font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:9px 16px; border-radius:6px; border:1px solid var(--border); background:var(--surface-2); color:var(--ink); cursor:pointer; transition:border-color .15s;}
+button.toybtn:hover{border-color:var(--accent); color:var(--accent-ink);}
+.btnrow{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+
+@media (max-width:620px){ body{font-size:16px;} .shell{padding-block:32px 60px;} h2{font-size:1.4rem;} }
+</style>
+
+<div class="shell">
+  <div class="masthead">
+    <div class="kicker">Project notebook — multiscaling in equity indices</div>
+    <h1 class="title">Multiscaling, Explained</h1>
+    <p class="dek">Every concept, formula and function behind the multifractal project — why each step exists, what it would mean if it were wrong, and how it connects to the work that came before it.</p>
+    <div class="meta-row">
+      <span><b>Reading time</b> ~30 min</span>
+      <span><b>Companion to</b> <code>multifractal/README.md</code></span>
+      <span><b>Method</b> T. Di Matteo, Quantitative Finance 7(1), 2007</span>
+      <span><b>Scope</b> 22 indices · 1998–2026</span>
+    </div>
+    <p class="howto"><b>How to read this version:</b> dotted-underlined words (like <span class="gloss" tabindex="0">this<span class="tip">hover or tap any dotted term for a one-line reminder of what it means</span></span>) carry a hover definition. Boxes marked <b>+ Show …</b> are collapsed by default — click to expand the formula or a worked example by hand. Three sections (§2, §6, §7) have a live widget — drag the sliders.</p>
+  </div>
+
+  <details class="toc-mobile">
+    <summary>Contents</summary>
+    <nav><ol>
+      <li><a href="#overview">Overview — what this is for</a></li>
+      <li><a href="#raw">The raw material: prices, logs, increments</a></li>
+      <li><a href="#structure">The structure function — the engine</a></li>
+      <li><a href="#hurst">The Hurst exponent, and H(q)</a></li>
+      <li><a href="#strength">Multiscaling strength, B</a></li>
+      <li><a href="#validate">Validating the estimator first</a></li>
+      <li><a href="#range">The fitting range</a></li>
+      <li><a href="#kurtosis">Kurtosis and temporal structure</a></li>
+      <li><a href="#uncertainty">Bootstrap vs. shuffle</a></li>
+      <li><a href="#mannwhitney">Mann–Whitney and the p-value</a></li>
+      <li><a href="#regression">Controlling for kurtosis</a></li>
+      <li><a href="#results">The results, assembled</a></li>
+      <li><a href="#functions">Every function, mapped</a></li>
+      <li><a href="#builds">Where this builds on earlier work</a></li>
+      <li><a href="#github">What goes on GitHub</a></li>
+    </ol></nav>
+  </details>
+
+  <nav class="toc">
+    <div class="toc-h">Contents</div>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#raw">Prices → increments</a></li>
+      <li><a href="#structure">Structure function</a></li>
+      <li><a href="#hurst">Hurst exponent, H(q)</a></li>
+      <li><a href="#strength">Multiscaling, B</a></li>
+      <li><a href="#validate">Validate first</a></li>
+      <li><a href="#range">Fitting range</a></li>
+      <li><a href="#kurtosis">Kurtosis & dynamics</a></li>
+      <li><a href="#uncertainty">Bootstrap vs. shuffle</a></li>
+      <li><a href="#mannwhitney">Mann–Whitney, p</a></li>
+      <li><a href="#regression">Regression check</a></li>
+      <li><a href="#results">The results</a></li>
+      <li><a href="#functions">Every function</a></li>
+      <li><a href="#builds">Builds on earlier work</a></li>
+      <li><a href="#github">On GitHub</a></li>
+    </ol>
+  </nav>
+
+  <article>
+
+    <section id="overview">
+      <span class="tag">0 — Overview</span>
+      <h2>What this project is, and why it exists</h2>
+      <p class="lede">The project asks one question: <strong>do emerging stock markets behave differently from developed ones at a structural level</strong> — not just "more volatile", but differently shaped across time scales — and if so, is that difference real, or a statistical illusion produced by a few extreme days?</p>
+      <p>Concretely: it estimates how the statistics of price moves change depending on how hard you weight large moves versus small ones, for 22 countries' stock indices over nearly three decades. It follows a method published by <strong>Prof. Tiziana Di Matteo</strong> — who teaches on the KCL programme this project was built for — and then does something most replications don't: it tries hard to break its own headline result, and reports honestly where it breaks.</p>
+      <div class="callout">
+        <span class="lbl">Purpose</span>
+        <p>This document exists to make every link in that chain legible, in order, with nothing assumed from a previous section left uncashed. Each section below opens by naming the open question left by the one before it, so the reasoning reads as one continuous argument rather than a list of techniques.</p>
+      </div>
+      <h3>Why it's useful</h3>
+      <ul>
+        <li><strong>It demonstrates exactly the gap the project was built to close.</strong> A weak undergraduate pure-mathematics transcript doesn't disprove mathematical maturity — a project that validates its own estimator, questions its own null hypothesis, and reports a negative result honestly, does that work instead.</li>
+        <li><strong>It's a worked example of a general skill: not trusting your own measurement.</strong> See <a href="#builds">§13</a> for how this same instinct shows up in three earlier, unrelated projects.</li>
+        <li><strong>The specific finding is genuinely interesting</strong> — and, as you'll see by §9, more fragile than it first looks.</li>
+      </ul>
+    </section>
+
+    <section id="raw">
+      <span class="tag">1 — Foundations</span>
+      <h2>The raw material: prices, logs, and increments</h2>
+      <p>Everything starts from a daily closing price for each index, back to 1998 where available (~7,000 trading days). The project never works with the raw price <code>P(t)</code> directly — it works with the <strong>log price</strong>, <code>X(t) = ln P(t)</code>.</p>
+      <div class="callout why">
+        <span class="lbl">Why logs, not prices — and why it isn't just convention</span>
+        <p>A move from 100 to 110 and a move from 1000 to 1100 are "the same" 10% change, but as raw numbers they're 10 and 100 — not comparable, and everything below depends on being able to compare moves across markets and decades. Logs turn multiplicative change (percent moves compound) into additive change: <code>X(t+τ) − X(t) ≈</code> the return over the gap τ. That's not a technicality — without it, a crash in a cheap, low-priced index and a crash in an expensive one would look like different-sized numbers purely from the price level, for reasons that have nothing to do with risk.</p>
+      </div>
+      <p>The quantity the whole project is built on is the <strong>increment over a gap of τ days</strong>:</p>
+      <div class="eqblock"><span class="lbl">The one object everything else is a function of</span>ΔX<sub>τ</sub>(t) &nbsp;=&nbsp; X(t + τ) − X(t)</div>
+      <p>τ (tau) is a time scale — one day, five days, nineteen days. The entire question "is this market multiscaling?" reduces to: <strong>does the statistical spread of ΔX<sub>τ</sub> grow with τ in the same way, regardless of how you measure "spread"?</strong> That's the next section — and "how you measure spread" is doing more work in that sentence than it looks like.</p>
+    </section>
+
+    <section id="structure">
+      <span class="tag">2 — The engine</span>
+      <h2>The structure function, and what "q" actually does</h2>
+      <p>The central object, for every market and every scale τ, is the <strong>q-th order structure function</strong>:</p>
+      <div class="eqblock"><span class="lbl">Structure function</span>S<sub>q</sub>(τ) &nbsp;=&nbsp; ⟨ |ΔX<sub>τ</sub>(t)|<sup>q</sup> ⟩<sub>t</sub></div>
+      <p>In words: take every τ-day price move in the whole history, take its absolute size, raise it to the power <code>q</code>, and average over all of them (the ⟨ ⟩<sub>t</sub> notation just means "average over every starting day t"). <code>q</code> is an exponent — and the entire reason it's in this formula at all is that <strong>changing it changes whose behaviour the average is reporting on</strong>, without ever removing any day from the calculation.</p>
+      <h3>What raising to the power q is actually doing — and what it isn't</h3>
+      <div class="callout warn">
+        <span class="lbl">The gap worth closing before anything else</span>
+        <p>It's tempting to read "q picks out extreme days" as meaning the method sorts days into two bins — "ordinary" and "extreme" — and looks at one bin or the other. <strong>It never does this.</strong> Every single day is in the average at every value of q. What changes is each day's <em>weight</em> in that average, continuously, as q moves. A day twice as large as another isn't "promoted to extreme" at some threshold — it simply counts for more, by an amount that grows smoothly as q increases. There is no categorisation step anywhere in this method; there is only reweighting. Holding onto that is what makes the next six sections cohere, rather than reading as "first sort days into buckets, then do statistics on the buckets" — which is a different (and wrong) method.</p>
+      </div>
+      <p>Here's the reweighting made concrete, on seven toy days — six ordinary moves and one large one:</p>
+      <div class="figure">
+        <svg viewBox="0 0 680 230" role="img" aria-label="Bar chart showing how raising returns to higher powers q makes one large move dominate the average, while small everyday moves dominate at low q.">
+          <line x1="60" y1="190" x2="650" y2="190" stroke="currentColor" stroke-opacity="0.35"/>
+          <text x="355" y="218" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="var(--ink-mute)">each day's contribution to the average, at increasing q</text>
+          <g font-family="IBM Plex Mono" font-size="11" fill="var(--ink-mute)">
+            <text x="135" y="206" text-anchor="middle">q = 1</text>
+            <text x="345" y="206" text-anchor="middle">q = 2</text>
+            <text x="555" y="206" text-anchor="middle">q = 4</text>
+          </g>
+          <g>
+            <rect x="80" y="178" width="14" height="12" fill="var(--developed)"/>
+            <rect x="98" y="172" width="14" height="18" fill="var(--developed)"/>
+            <rect x="116" y="165" width="14" height="25" fill="var(--developed)"/>
+            <rect x="134" y="26" width="14" height="164" fill="var(--emerging)"/>
+            <rect x="152" y="170" width="14" height="20" fill="var(--developed)"/>
+            <rect x="170" y="175" width="14" height="15" fill="var(--developed)"/>
+            <rect x="188" y="168" width="14" height="22" fill="var(--developed)"/>
+          </g>
+          <g>
+            <rect x="290" y="186" width="14" height="4" fill="var(--developed)"/>
+            <rect x="308" y="183" width="14" height="7" fill="var(--developed)"/>
+            <rect x="326" y="177" width="14" height="13" fill="var(--developed)"/>
+            <rect x="344" y="30" width="14" height="160" fill="var(--emerging)"/>
+            <rect x="362" y="180" width="14" height="10" fill="var(--developed)"/>
+            <rect x="380" y="185" width="14" height="5" fill="var(--developed)"/>
+            <rect x="398" y="178" width="14" height="12" fill="var(--developed)"/>
+          </g>
+          <g>
+            <rect x="500" y="189.5" width="14" height="0.5" fill="var(--developed)"/>
+            <rect x="518" y="189" width="14" height="1" fill="var(--developed)"/>
+            <rect x="536" y="188" width="14" height="2" fill="var(--developed)"/>
+            <rect x="554" y="34" width="14" height="156" fill="var(--emerging)"/>
+            <rect x="572" y="189" width="14" height="1" fill="var(--developed)"/>
+            <rect x="590" y="189.6" width="14" height="0.4" fill="var(--developed)"/>
+            <rect x="608" y="188.5" width="14" height="1.5" fill="var(--developed)"/>
+          </g>
+        </svg>
+        <figcaption><b>Figure.</b> Same seven days throughout, nothing removed. At <code>q=1</code> the large move (orange) is one loud voice among several. By <code>q=4</code> its bar has grown and every other bar has shrunk — not because the small days left the average, but because their weight in it has fallen.</figcaption>
+      </div>
+
+      <details class="reveal"><summary>Show it with real arithmetic on five numbers</summary><div class="inner">
+        <p>Take five toy moves: <code>0.3, −0.5, 0.2, −4.0, 0.4</code> (the fourth is a crash day). Structure function at <code>q=1</code> is the mean absolute value:</p>
+        <div class="eqblock">S₁ = (0.3+0.5+0.2+4.0+0.4)/5 = 5.4/5 = <b>1.08</b></div>
+        <p>The crash day's own contribution is <code>4.0/5.4 = 74%</code> of that total. Now at <code>q=4</code>, each value is raised to the 4th power first:</p>
+        <div class="eqblock">0.3⁴=0.0081 &nbsp;&nbsp; 0.5⁴=0.0625 &nbsp;&nbsp; 0.2⁴=0.0016 &nbsp;&nbsp; 4.0⁴=256 &nbsp;&nbsp; 0.4⁴=0.0256<br>sum = 256.098 &nbsp;&nbsp;→&nbsp;&nbsp; crash day's share = 256/256.098 = <b>99.96%</b></div>
+        <p>The other four numbers together now contribute a twentieth of a percent. Nothing was removed from the sum — their contribution simply became negligible. That's the entire mechanism, run by hand.</p>
+      </div></details>
+
+      <div class="widget">
+        <div class="wlabel">Try it — toy sandbox (24 days, one adjustable shock)</div>
+        <div class="row">
+          <label>q = <b id="qOut1">1.00</b> &nbsp;<span style="color:var(--ink-mute)">(how hard large moves are weighted)</span>
+            <input type="range" id="q1" min="0.5" max="4" step="0.25" value="1">
+          </label>
+          <label>shock size = <b id="shockOut1">3.0</b> toy units &nbsp;<span style="color:var(--ink-mute)">(size of day 13's move)</span>
+            <input type="range" id="shock1" min="1" max="15" step="0.5" value="3">
+          </label>
+        </div>
+        <div class="figure" style="margin:0 0 10px; padding:14px 14px 8px;">
+          <svg viewBox="0 0 680 160" role="img" aria-label="Live bar chart of each toy day's contribution share, updating as the q and shock sliders move.">
+            <line x1="40" y1="140" x2="664" y2="140" stroke="currentColor" stroke-opacity="0.3"/>
+            <g id="bars1"></g>
+          </svg>
+        </div>
+        <div class="readouts">
+          <div class="readout"><span class="k">shock day's share of the total</span><b id="shareOut1">—</b></div>
+          <div class="readout"><span class="k">kurtosis of this toy series (preview, see §7)</span><b id="kurtOut1">—</b></div>
+        </div>
+        <p class="note">Push <b>q</b> up with the shock small — not much happens. Push <b>shock</b> up with q at 1 — still not much. Push <b>both</b> up together and watch the shock bar swallow the chart. That combination is exactly what §7 is about.</p>
+      </div>
+
+      <p>This is why the project scans <code>q</code> from 0.5 up to 4 in steps of 0.25 (fifteen values) rather than picking one: a single <code>q</code> only tells you about one slice of "how much weight you've decided to give extreme moves." Scanning q is how you find out whether the <em>whole</em> distribution of move sizes reweights the same way as q grows, or not — which is exactly what the next section turns that scan into a number for.</p>
+    </section>
+
+    <section id="hurst">
+      <span class="tag">3 — The scaling law</span>
+      <h2>The Hurst exponent, and the generalised H(q)</h2>
+      <p>§2 fixed one scale, τ, and scanned q. This section does the opposite: fix q, and ask how <code>S_q(τ)</code> changes as τ itself grows — because the actual claim being tested is about <em>time</em>, not just about which moments are reliable.</p>
+      <p>The assumption is that <code>S_q(τ)</code> scales as a <strong>power law</strong> in τ:</p>
+      <div class="eqblock"><span class="lbl">Scaling assumption</span>S<sub>q</sub>(τ) &nbsp;~&nbsp; τ <sup>q·H(q)</sup></div>
+      <p>which, taking logs of both sides, becomes a straight line — and this is the step that turns an abstract "scales as a power law" into something you can actually fit with a ruler:</p>
+      <div class="eqblock"><span class="lbl">Linearised — this is literally what the code fits</span>log S<sub>q</sub>(τ) &nbsp;=&nbsp; const &nbsp;+&nbsp; q·H(q) · log τ</div>
+      <p>So <code>H(q)</code> is nothing more exotic than <strong>the slope of a straight line on a log–log plot</strong>, divided by <code>q</code> to undo the exponent from the structure function. Two numbers you already have an intuition for sit at the edges:</p>
+      <ul>
+        <li><code>H = 0.5</code> — a plain <span class="gloss" tabindex="0">random walk<span class="tip">each day's move is independent of every other day's — the textbook "nothing interesting is happening" case</span></span>. Moves at different scales are statistically independent.</li>
+        <li><code>H &gt; 0.5</code> — <span class="gloss" tabindex="0">persistent<span class="tip">an up-move tends to be followed by more up-move: trending behaviour</span></span>. <code>H &lt; 0.5</code> — <span class="gloss" tabindex="0">anti-persistent<span class="tip">moves tend to reverse: mean-reverting behaviour</span></span>.</li>
+      </ul>
+      <h3>Monofractal vs. multifractal — the shape that matters</h3>
+      <p>Compute <code>H(q)</code> across the whole q-range from §2 and you get a curve, not a number. Its shape is the entire point:</p>
+      <div class="figure">
+        <svg viewBox="0 0 660 360" role="img" aria-label="Theoretical H(q) curves: flat for Brownian motion and fractional Brownian motion, gently falling for the multifractal random walk, crossing at q=2 and H=0.5.">
+          <g font-family="IBM Plex Mono" font-size="11" fill="var(--ink-mute)">
+            <line x1="50" y1="20" x2="50" y2="320" stroke="currentColor" stroke-opacity="0.35"/>
+            <line x1="50" y1="320" x2="620" y2="320" stroke="currentColor" stroke-opacity="0.35"/>
+            <text x="44" y="54" text-anchor="end">0.70</text>
+            <text x="44" y="174" text-anchor="end">0.50</text>
+            <text x="44" y="294" text-anchor="end">0.30</text>
+            <text x="50" y="338" text-anchor="middle">0.5</text>
+            <text x="131" y="338" text-anchor="middle">1</text>
+            <text x="294" y="338" text-anchor="middle">2</text>
+            <text x="457" y="338" text-anchor="middle">3</text>
+            <text x="620" y="338" text-anchor="middle">4</text>
+            <text x="335" y="356" text-anchor="middle" font-size="12">q (moment order)</text>
+          </g>
+          <line x1="50" y1="170" x2="620" y2="170" stroke="var(--nullref)" stroke-dasharray="3,4" stroke-width="1.4"/>
+          <line x1="50" y1="50" x2="620" y2="50" stroke="var(--ink-mute)" stroke-width="2"/>
+          <line x1="50" y1="290" x2="620" y2="290" stroke="var(--ink-mute)" stroke-width="2" stroke-dasharray="7,3"/>
+          <polyline fill="none" stroke="var(--developed)" stroke-width="2.4" points="50,161 90.7,162.5 131.4,164 172.1,165.5 212.9,167 253.6,168.5 294.3,170 335,171.5 375.7,173 416.4,174.5 457.1,176 497.9,177.5 538.6,179 579.3,180.5 620,182"/>
+          <polyline fill="none" stroke="var(--emerging)" stroke-width="2.4" points="50,152 90.7,155 131.4,158 172.1,161 212.9,164 253.6,167 294.3,170 335,173 375.7,176 416.4,179 457.1,182 497.9,185 538.6,188 579.3,191 620,194"/>
+          <circle cx="294.3" cy="170" r="4" fill="var(--ink)"/>
+        </svg>
+        <figcaption><b>Figure.</b> Exact theoretical curves. Flat grey lines (Brownian motion at H=0.5, fractional Brownian motion at H=0.7/0.3) are <strong>monofractal</strong> — one exponent for every q, because every moment reweights the same underlying structure identically. The falling teal/orange curves are a <strong>multifractal random walk</strong> — its exponent genuinely depends on q.</figcaption>
+      </div>
+      <p>Flat H(q) means one number describes price moves at every scale of "how extreme" — <strong>monofractal</strong>. A <em>falling</em> H(q) means ordinary days and extreme days are governed by different exponents — <strong>multiscaling</strong> (the project uses "multiscaling" and "multifractal" interchangeably, following Di Matteo's own paper). This is the point you've already got. The open question §4 answers: <em>a whole curve is hard to rank 22 countries by — how do you turn "the curve falls" into one comparable number per market?</em></p>
+    </section>
+
+    <section id="strength">
+      <span class="tag">4 — One summary number</span>
+      <h2>Multiscaling strength, B</h2>
+      <p>Take the H(q) curve from §3 and fit <em>another</em> straight line through it — the same kind of least-squares fit as before, just one level up (first we fit a line to get each H(q) point; now we fit a line through those points):</p>
+      <div class="eqblock"><span class="lbl">The summary statistic</span>H(q) &nbsp;=&nbsp; A &nbsp;−&nbsp; B·q</div>
+      <details class="reveal"><summary>Why fit a straight line through H(q) rather than, say, just comparing H(1) to H(4)?</summary><div class="inner">
+        <p>You could — and the project also computes that simpler version, <code>D = H(1) − H(4)</code>, as a cross-check (next box). But a single pair of points throws away the other thirteen q-values computed in §2–3, and is more sensitive to noise in exactly those two points. Fitting a line uses all fifteen points at once, the same logic as using more data to estimate anything: the <span class="gloss" tabindex="0">standard error<span class="tip">roughly, how much the estimate would wobble if you reran the measurement on a fresh sample — smaller is more trustworthy</span></span> on a line fit through fifteen points is smaller than on a difference between two of them.</p>
+      </div></details>
+      <p><code>B</code> is the sign-flipped slope of that fit. <code>B = 0</code> is a flat curve — monofractal. <strong>Larger B means a more steeply falling H(q) — stronger multiscaling.</strong> This single number is what gets ranked, bootstrapped, and compared between developed and emerging markets in every chart from §8 onward. Nothing about computing B tells you whether it's trustworthy, though — a slope fit through fifteen noisy points can produce a confident-looking number even when the underlying curve isn't really falling at all. That's the open question the next two sections exist to answer, from two different directions: §5 asks "does this method even work, on cases where we already know the answer?", and §6 asks "did the specific choices made while fitting (how many τ, how many q) bias the number?"</p>
+      <div class="callout">
+        <span class="lbl">A second, simpler proxy — used as a cross-check, not the headline</span>
+        <p>The code also computes <code>D = H(1) − H(2)</code> (confusingly named <code>h1_minus_h4</code> in the source, from an earlier version that used q=4 — it still returns H(1) minus whatever the second argument is), following Di Matteo's own paper directly. <code>B</code> and <code>D</code> agree on every market in this dataset, which is itself a small piece of evidence that the finding isn't an artefact of one particular way of summarising the curve.</p>
+      </div>
+    </section>
+
+    <section id="validate">
+      <span class="tag">5 — Trust, then verify</span>
+      <h2>Why the estimator is validated before it's trusted on real data</h2>
+      <p>§4 left an open question: a confident-looking B could come from a method that's simply wrong. Before <code>H(q)</code> is estimated on a single real index, it's run on <strong>three synthetic processes whose true H(q) is known exactly</strong> — written down by a mathematician, not estimated — because an estimator that returns a plausible number is not the same thing as one that returns the <em>right</em> number, and at n≈7,000 daily observations, a biased estimator can still look entirely believable.</p>
+      <div class="tblwrap">
+        <table>
+          <caption>Three negative controls and one positive control, n=7,000</caption>
+          <thead><tr><th>Process</th><th>True H(q)</th><th>What it tests</th><th class="num">Recovered B</th><th class="num">True B</th></tr></thead>
+          <tbody>
+            <tr><td>Brownian motion</td><td>0.5, flat</td><td>Does the estimator hallucinate multiscaling where there is none?</td><td class="num">&minus;0.0002 ± 0.0029</td><td class="num">0</td></tr>
+            <tr><td>Fractional BM, H=0.7</td><td>0.7, flat</td><td>Same question, away from H=0.5</td><td class="num">+0.0004 ± 0.0035</td><td class="num">0</td></tr>
+            <tr><td>Fractional BM, H=0.3</td><td>0.3, flat</td><td>Same question, the other side</td><td class="num">+0.0002 ± 0.0020</td><td class="num">0</td></tr>
+            <tr><td>Multifractal random walk, λ²=0.02</td><td>falling, slope 0.01</td><td>Does the estimator find real multiscaling when it's actually there?</td><td class="num">0.0066</td><td class="num">0.01 <span style="color:var(--ink-mute)">(66%)</span></td></tr>
+            <tr><td>Multifractal random walk, λ²=0.04</td><td>falling, slope 0.02</td><td>Same, at double the true strength</td><td class="num">0.0132</td><td class="num">0.02 <span style="color:var(--ink-mute)">(66%)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Read the first three rows as a <span class="gloss" tabindex="0">null distribution<span class="tip">the spread of results you'd get from a method even when there is genuinely nothing to find — your baseline for "is this number unusual?"</span></span> being built, and the last two as a check that the method isn't so conservative it misses a real effect. Two things this buys, stated plainly:</p>
+      <ul>
+        <li><strong>A null band.</strong> On a genuine random walk at this sample size, <code>B</code> exceeds <code>0.0046</code> only 5% of the time by chance alone. Any market's B has to clear that bar before "multiscaling" means anything more than noise — this is the dashed line you'll see on the ranking chart in §8.</li>
+        <li><strong>A known, constant bias.</strong> When multiscaling is really there, the estimator recovers only about <strong>66%</strong> of the true strength — at both tested levels, which is what makes it a calibration factor rather than an unpredictable error. Every <code>B</code> reported on real markets later is a <em>lower bound</em>, not a point estimate.</li>
+      </ul>
+      <details class="reveal"><summary>Where does the 66% actually come from?</summary><div class="inner">
+        <p>The multifractal random walk is built from a log-correlated Gaussian volatility field, generated by an FFT trick called <span class="gloss" tabindex="0">circulant embedding<span class="tip">a standard way to generate correlated random noise fast, by using the Fourier transform — a computational trick, not a modelling choice</span></span>. That trick requires clipping a handful of mathematically-required-to-be-impossible negative <span class="gloss" tabindex="0">eigenvalues<span class="tip">here: numbers that come out of the Fourier-transform step and should always be positive for the maths to be consistent — a few come out tiny and negative purely from floating-point rounding</span></span> that appear only because of floating-point rounding — standard practice, but it very slightly throttles the simulated volatility correlations. That's the direct, traceable cause of the third of the signal the estimator doesn't recover.</p>
+      </div></details>
+    </section>
+
+    <section id="range">
+      <span class="tag">6 — A choice with consequences</span>
+      <h2>The fitting range: why τ<sub>max</sub> = 19 and q up to 4, not further</h2>
+      <p>§3 fit a straight line through <code>log S_q(τ)</code> vs <code>log τ</code> — but a straight line needs a window of τ-values to be fit over, and nobody has said yet how that window gets chosen. This section is that choice, made explicit, because both ends of it trade bias against variance.</p>
+      <h3>τ (the time-scale window, 1 to 19 trading days)</h3>
+      <p>Too narrow a window (small τ<sub>max</sub>) and the slope is noisy — too few points to pin it down reliably, so the fitted line swings a lot from one resample to the next. Too wide a window and you risk fitting straight through a point where the power law has already broken down (price behaviour over one day and over three months needn't share the same exponent). Try it below on a toy example built the same shape as the real data, deliberately bending upward in its last few points to simulate exactly that kind of regime change:</p>
+      <div class="widget">
+        <div class="wlabel">Try it — how many τ-points to fit through</div>
+        <div class="row">
+          <label>τ<sub>max</sub> included = <b id="taumaxOut">10</b> of 15 toy points
+            <input type="range" id="taumaxSlider" min="3" max="15" step="1" value="10">
+          </label>
+        </div>
+        <div class="figure" style="margin:0 0 10px; padding:14px 14px 8px;">
+          <svg viewBox="0 0 600 260" role="img" aria-label="Scatter plot of toy log-structure-function values against log tau, with a live-refitted regression line as the tau_max slider moves, showing instability with few points and bias from a late regime break with too many.">
+            <line x1="50" y1="20" x2="50" y2="240" stroke="currentColor" stroke-opacity="0.35"/>
+            <line x1="50" y1="240" x2="560" y2="240" stroke="currentColor" stroke-opacity="0.35"/>
+            <g id="taupoints"></g>
+            <line id="taufit" x1="50" y1="200" x2="300" y2="100" stroke="var(--accent)" stroke-width="2.4"/>
+          </svg>
+        </div>
+        <div class="readouts">
+          <div class="readout"><span class="k">fitted slope (≈ q·H(q))</span><b id="slopeOut">—</b></div>
+          <div class="readout"><span class="k">standard error of the slope</span><b id="seOut">—</b></div>
+        </div>
+        <p class="note">Drag below 6 points: the line swings wildly between drags of similar data — high variance. Drag past 12: the fitted line starts tilting upward to chase the last few points, which were deliberately built to bend away from the true trend — that's bias from over-extending the window. The real project's choice of 19 is the same trade-off, made on real data instead of this toy one.</p>
+      </div>
+      <h3>q (the moment range, 0.5 to 4)</h3>
+      <p>This range has a sharper reason behind it, and it's the single most important methodological fact in the whole project — important enough that the whole of §7 is built around unpacking it: <strong>sample <span class="gloss" tabindex="0">moments<span class="tip">a "moment" here just means an average of values raised to some power — the mean is the 1st moment, variance comes from the 2nd, kurtosis from the 4th</span></span> of a heavy-tailed distribution become statistically unreliable as q grows</strong>, because a moment of order q is dominated by the single largest observation once q exceeds roughly the number of finite moments the underlying distribution actually has. With fat-tailed daily returns, that ceiling arrives well before q=4. The project doesn't just pick q≤4 and hope — it separately re-estimates everything restricted to q ≤ 2, where this problem is far smaller, as an explicit check rather than a buried assumption.</p>
+    </section>
+
+    <section id="kurtosis">
+      <span class="tag">7 — The real question</span>
+      <h2>Kurtosis, and "temporal structure" — dynamics or just a fat distribution?</h2>
+      <p>Here's the open thread from §2 and §6 coming together: §2 showed that high q lets one extreme day dominate the average; §6 showed that this is a real statistical problem, not a minor one. This section asks the question that follows directly: <strong>if one extreme day can dominate the structure function on its own, does a "falling H(q) curve" actually require any real time-dependent behaviour at all — or can a single bad day fake the whole signature?</strong></p>
+      <h3>What kurtosis measures</h3>
+      <p><span class="gloss" tabindex="0">Kurtosis<span class="tip">a number describing how much of a distribution's variance comes from rare extreme values versus everyday ones; 0 for a Normal distribution, much higher for "fat-tailed" data</span></span> is the standardised fourth moment of a distribution — it measures how much of the variance comes from rare, extreme values rather than everyday ones:</p>
+      <div class="eqblock"><span class="lbl">Excess kurtosis (Normal distribution = 0, by convention)</span>Kurt[X] &nbsp;=&nbsp; E[(X − μ)<sup>4</sup>] / σ<sup>4</sup> &nbsp;−&nbsp; 3</div>
+      <details class="reveal"><summary>Why the fourth power, and why subtract 3?</summary><div class="inner">
+        <p>The fourth power is what makes kurtosis sensitive specifically to the <em>tails</em> rather than the middle of a distribution: a value twice as far from the mean contributes <em>sixteen times</em> as much to this average (2⁴=16) as a value at average distance, whereas in an ordinary variance (second power) it only contributes four times as much. That's a much sharper spotlight on rare, extreme values than variance gives you. The <code>−3</code> is just a convention that makes a Normal (bell-curve) distribution read as exactly 0, so positive numbers always mean "fatter-tailed than Normal" and you don't have to remember that a Normal distribution's raw kurtosis is 3.</p>
+      </div></details>
+      <p>Daily equity returns almost never have kurtosis near 0 — the 22 markets here range from <strong>4.3</strong> (Taiwan — only mildly fat-tailed) to <strong>85.9</strong> (Malaysia — a single historical event, the 1998 Asian-crisis capital controls, dominates the entire 28-year sample).</p>
+      <div class="widget">
+        <div class="wlabel">Same sandbox as §2 — now watch kurtosis, not the bars</div>
+        <div class="row">
+          <label>shock size = <b id="shockOut2">6.0</b> toy units
+            <input type="range" id="shock2" min="1" max="15" step="0.5" value="6">
+          </label>
+          <label>q = <b id="qOut2">4.00</b>
+            <input type="range" id="q2" min="0.5" max="4" step="0.25" value="4">
+          </label>
+        </div>
+        <div class="figure" style="margin:0 0 10px; padding:14px 14px 8px;">
+          <svg viewBox="0 0 680 160" role="img" aria-label="Live bar chart of each toy day's contribution share, paired with a live-updating kurtosis readout as the shock slider moves.">
+            <line x1="40" y1="140" x2="664" y2="140" stroke="currentColor" stroke-opacity="0.3"/>
+            <g id="bars2"></g>
+          </svg>
+        </div>
+        <div class="readouts">
+          <div class="readout"><span class="k">kurtosis of this toy series</span><b id="kurtOut2">—</b></div>
+          <div class="readout"><span class="k">shock day's contribution share at q above</span><b id="shareOut2">—</b></div>
+        </div>
+        <p class="note">Notice these two numbers rise <em>together</em> as you drag shock up — a bigger single outlier inflates both at once, in the same series, with no change in how many days are "interesting". That's the entire worry in one widget: the two quantities are mechanically linked, which is exactly why a high B needs to be checked against kurtosis before it's believed (§10), not just celebrated.</p>
+      </div>
+      <h3>Why this threatens the entire headline finding</h3>
+      <p>An <span class="gloss" tabindex="0">iid<span class="tip">independent and identically distributed — each value is drawn separately, with no memory of any other value, from the same distribution every time</span></span> sequence of returns — meaning each day's return is drawn independently, with zero memory of any other day — can manufacture a falling H(q) curve purely from the shape of its one-day distribution, with no real dynamics whatsoever.</p>
+      <div class="callout warn">
+        <span class="lbl">The control that actually settles it</span>
+        <p>The project builds a random walk from an <strong>iid Student-t distribution</strong> (a textbook fat-tailed distribution, with a <span class="gloss" tabindex="0">degrees of freedom<span class="tip">a parameter of the Student-t distribution controlling how fat its tails are — lower means fatter tails and more extreme outliers</span></span> parameter controlling exactly how fat the tails are) with <em>zero</em> temporal structure by construction. At <code>df=5</code> it produces <code>B ≈ 0.026</code>; at <code>df=3</code>, <code>B ≈ 0.069</code> — squarely inside the range measured on the real markets. <strong>A process with no time-dependent structure at all reproduces the headline effect just from having a fat-tailed distribution.</strong> So B alone cannot answer "dynamics or tails?" — which is exactly why §8–10 exist as separate, independent checks rather than one number being asked to do all the work.</p>
+      </div>
+      <p>This is also the exact instinct that recurs across the author's other work: in actuarial pension modelling, what matters is the propagated distribution's tail, not its centre; in football tracking data, the recurring question is whether an observed pattern is real structure or a measurement artefact. Same question, different field — see <a href="#builds">§13</a>.</p>
+    </section>
+
+    <section id="uncertainty">
+      <span class="tag">8 — Two different resampling tricks</span>
+      <h2>Block bootstrap vs. shuffle surrogates — two tools for two different jobs</h2>
+      <p>§7 leaves two separate things still needed: some way to say how <em>uncertain</em> a given B estimate is (so "B=0.078 for Malaysia" can come with an honest range, not a bare number), and some way to build the null band promised back in §5 directly from each market's own data, not just from an abstract random walk. Both bootstrap and shuffle resample the same return series — but for opposite purposes, and conflating them is the easiest way to misread this kind of analysis.</p>
+      <div class="buildrow">
+        <div class="buildcard">
+          <div class="from">Block bootstrap<br><span style="color:var(--ink-mute)">→ confidence interval</span></div>
+          <p>Cuts the return series into contiguous blocks (length ≈ n<sup>1/3</sup> ≈ 19 days here) and resamples <em>whole blocks</em>, not individual days, then rebuilds a price path and re-estimates B — 500 times. Resampling blocks rather than single days is deliberate: it preserves short-range volatility clustering <em>within</em> a block while still injecting resampling randomness — which is what makes the resulting spread an honest confidence interval, rather than one that pretends consecutive days are independent when they demonstrably aren't.</p>
+        </div>
+        <div class="buildcard">
+          <div class="from">Shuffle surrogates<br><span style="color:var(--ink-mute)">→ null distribution</span></div>
+          <p>Randomly <em>permutes</em> individual days, completely destroying their original order. This keeps the <span class="gloss" tabindex="0">marginal distribution<span class="tip">the distribution of individual values on their own, ignoring what order they came in — e.g. the exact same set of returns, just rearranged</span></span> of returns <strong>exactly</strong> — same numbers, same kurtosis — while eliminating anything that depended on order. Whatever multiscaling survives this is definitionally not about dynamics.</p>
+        </div>
+      </div>
+      <div class="widget">
+        <div class="wlabel">Try both on the same 24-day toy series (shock fixed at 6)</div>
+        <div class="figure" style="margin:0 0 10px; padding:14px 14px 8px;">
+          <svg viewBox="0 0 680 110" role="img" aria-label="Bar chart of the original, unshuffled toy series.">
+            <line x1="40" y1="90" x2="664" y2="90" stroke="currentColor" stroke-opacity="0.3"/>
+            <g id="origBars"></g>
+          </svg>
+          <figcaption style="padding-top:8px;">original order — kurtosis <b id="origKurt" style="color:var(--ink)">—</b></figcaption>
+        </div>
+        <div class="btnrow">
+          <button class="toybtn" id="shuffleBtn" type="button">⟲ Shuffle it</button>
+          <button class="toybtn" id="bootBtn" type="button">⟲ Block-resample it</button>
+        </div>
+        <div class="figure" style="margin:0 0 10px; padding:14px 14px 8px;">
+          <svg viewBox="0 0 680 110" role="img" aria-label="Bar chart that updates to show a newly shuffled or block-resampled version of the toy series each time a button is clicked.">
+            <line x1="40" y1="90" x2="664" y2="90" stroke="currentColor" stroke-opacity="0.3"/>
+            <g id="resultBars"></g>
+          </svg>
+          <figcaption style="padding-top:8px;" id="resultCaption">click a button above</figcaption>
+        </div>
+        <p class="note">Click <b>Shuffle it</b> a few times: the kurtosis number barely moves — same numbers, just reordered, which is exactly why the shuffle keeps the marginal distribution "exactly" as claimed above. Click <b>Block-resample it</b> a few times: the kurtosis number jitters more, because some days (including, sometimes, the shock day) now appear twice or not at all.</p>
+      </div>
+      <div class="callout warn">
+        <span class="lbl">The twist that makes this project more than a replication</span>
+        <p>The standard sanity check in this literature is: shuffle the data, and if multiscaling survives, it must be a tail artefact rather than real dynamics. Here, <strong>every one of the 22 markets comes back with <em>more</em> multiscaling after shuffling than before.</strong> That looks damning — until the same test is run on the multifractal random walk from §5, whose multiscaling is multifractal by mathematical construction, genuinely real. Shuffling <em>that</em> process <em>also</em> increases its measured B (from 0.0119 to 0.0366 at λ²=0.04). Destroying volatility clustering isolates the large moves from their neighbours while leaving the heavy marginal distribution completely intact — and isolated large moves inflate this particular statistic regardless of whether the original structure was real. <strong>The plain shuffle is a marginal-matched benchmark, not a one-sided null test</strong> — which is exactly why the project reports the <em>excess</em> over the shuffled value (<code>dB = B − B_shuffled</code>) as a separate, more honest statistic, rather than treating "beats the shuffle" as the bar to clear.</p>
+      </div>
+    </section>
+
+    <section id="mannwhitney">
+      <span class="tag">9 — Comparing two groups</span>
+      <h2>The Mann–Whitney U test, and what p = 0.0013 actually says</h2>
+      <p>§8 produced, for every market, a B with a confidence interval and a shuffle-based null comparison. The remaining open question is the one the project was actually asked at the very top: <em>are emerging markets as a group different from developed markets as a group?</em> With 13 developed markets and 9 emerging ones, that's a two-group comparison — and the project deliberately doesn't reach for the most familiar tool (a t-test comparing two means).</p>
+      <details class="reveal"><summary>Why not just compare the two group means with a t-test?</summary><div class="inner">
+        <p>A t-test's p-value is only trustworthy if the quantity being compared is roughly Normally distributed within each group — and B has one extreme outlier (Malaysia) that distorts a mean-and-variance-based test badly. A tiny worked example makes this concrete: suppose "emerging" B values were <code>0.02, 0.02, 0.02, 0.02, 0.90</code> (one wild outlier) and "developed" were <code>0.01, 0.01, 0.01, 0.01, 0.01</code>. The emerging <em>mean</em> is dragged up to 0.19 by that single number, making the group look dramatically different by a t-test — but four of the five emerging values are barely different from developed at all. A <span class="gloss" tabindex="0">rank-based<span class="tip">a test that only uses the order (1st smallest, 2nd smallest, …) of the combined values, not their actual sizes — so one wildly large number can't dominate the result the way it can dominate a mean</span></span> test instead asks how often, across all pairs, the emerging value beats the developed one — and that 0.90 only ever "wins" the same number of pairwise comparisons as a merely-large number would, however enormous it actually is. Mann–Whitney is specifically built to not be distorted this way.</p>
+      </div></details>
+      <p>Mann–Whitney asks a purely rank-based question:</p>
+      <div class="eqblock"><span class="lbl">What the test actually computes</span>If you pick one emerging-market B and one developed-market B at random, <br>how often is the emerging one larger?</div>
+      <p>Under the <span class="gloss" tabindex="0">null hypothesis<span class="tip">the deliberately boring assumption being tested against — here, "the two groups are really drawn from the same distribution, with no true difference"</span></span> (no real difference between the groups), that probability should be 50%. The test's <span class="gloss" tabindex="0">p-value<span class="tip">the probability of seeing a result this extreme (or more extreme) if the null hypothesis were actually true — NOT the probability that the null hypothesis itself is true</span></span> is the probability of seeing a split this lopsided, or more lopsided, <em>if the null hypothesis were true</em>.</p>
+      <div class="callout">
+        <span class="lbl">Reading p = 0.0013 correctly</span>
+        <p>It means: <strong>if emerging and developed markets really had identically distributed multiscaling</strong>, you'd see a split this extreme (9 emerging markets ranking this far above 13 developed ones) only about 13 times in 10,000 random re-splits. It does <em>not</em> mean "there's a 0.13% chance the null is true" (a common and wrong rephrasing), and it says nothing at all about <em>why</em> the groups differ — which is precisely the question §7–8 exist to chase down separately, and §10 checks one specific candidate answer for.</p>
+      </div>
+      <p>The same test, run five different ways, is how "does the gap survive?" gets answered without relying on a single number:</p>
+      <div class="tblwrap">
+        <table>
+          <caption>Every Mann–Whitney check run on the developed/emerging gap</caption>
+          <thead><tr><th>What's compared</th><th class="num">Emerging mean</th><th class="num">Developed mean</th><th class="num">p-value</th></tr></thead>
+          <tbody>
+            <tr><td>Raw B</td><td class="num">0.0281</td><td class="num">0.0085</td><td class="num">0.0013</td></tr>
+            <tr><td>Raw B, excluding Malaysia</td><td class="num">0.0218</td><td class="num">0.0085</td><td class="num">0.0017</td></tr>
+            <tr><td>Excess over shuffled null (dB)</td><td class="num">&minus;0.0220</td><td class="num">&minus;0.0343</td><td class="num">0.0097</td></tr>
+            <tr><td>Low moments only, q ≤ 2</td><td class="num">0.0210</td><td class="num">0.0169</td><td class="num">0.0545</td></tr>
+            <tr><td>Low moments, excluding Malaysia</td><td class="num">0.0191</td><td class="num">0.0169</td><td class="num">0.1051</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Read down that column of p-values: the result is decisive at the full q-range, still holds (more weakly) net of the shuffle benchmark, and <strong>stops being significant the moment the analysis is restricted to the moments that can actually be estimated reliably</strong> — exactly the q≤2 restriction §6 flagged as the honest range. That pattern across five deliberately adversarial versions of the same test — not any single p-value — is the actual finding.</p>
+    </section>
+
+    <section id="regression">
+      <span class="tag">10 — Does kurtosis explain it away?</span>
+      <h2>Controlling for kurtosis: a two-variable regression</h2>
+      <p>§9's tests compare two groups but don't separate out <em>why</em> a market scores high — being emerging, or just having a fat-tailed return distribution, which §7 showed can inflate B on its own with zero dynamics. A <span class="gloss" tabindex="0">regression<span class="tip">a way of asking how much each of several possible explanations individually contributes to an outcome, holding the others fixed</span></span> can hold one of those explanations fixed while asking about the other:</p>
+      <div class="eqblock"><span class="lbl">The regression actually run</span>B &nbsp;=&nbsp; β<sub>0</sub> &nbsp;+&nbsp; β<sub>1</sub>·(excess kurtosis) &nbsp;+&nbsp; β<sub>2</sub>·(1 if emerging, else 0) &nbsp;+&nbsp; error</div>
+      <details class="reveal"><summary>What a coefficient, a t-statistic and R² each actually mean here</summary><div class="inner">
+        <p><code>β₁</code> and <code>β₂</code> are the model's best estimate of how much B moves per unit change in kurtosis, and how much B shifts for an emerging market versus a developed one of the <em>same</em> kurtosis, respectively. A <span class="gloss" tabindex="0">t-statistic<span class="tip">a coefficient divided by its own uncertainty (standard error) — a way of asking "is this effect big relative to how unsure we are about it?"</span></span> is simply that coefficient divided by its own standard error; as a rough rule of thumb, |t| above about 2 is the conventional bar for "probably not noise" at this sample size. <span class="gloss" tabindex="0">R²<span class="tip">the fraction of the variation in the outcome (here, B across the 22 markets) that the model's predictors jointly explain — 0 means no explanatory power, 1 means perfect</span></span> = 0.80 means these two predictors together explain 80% of the variation in B across the 22 markets.</p>
+      </div></details>
+      <p>If β₂ (the emerging-market dummy) is still clearly non-zero <em>after</em> kurtosis is accounted for, that's evidence the developed/emerging split carries information kurtosis alone doesn't. It survives at <strong>t = 3.6, p = 0.002, R² = 0.80</strong> — kurtosis is doing real work (it's correlated with B, as §7 would predict, and the §8 scatter below shows it directly), but the emerging/developed distinction adds something on top of it rather than being swallowed by it. This is the closest thing in the whole project to a direct answer to "is it just the fat tails?" — and the answer is <em>mostly, but not entirely</em>.</p>
+    </section>
+
+    <section id="results">
+      <span class="tag">11 — Putting it together</span>
+      <h2>The results, assembled from the real output</h2>
+      <h3>11.1 — Every market, ranked by multiscaling strength</h3>
+      <div class="figure">
+        <div class="legend">
+          <span><span class="swatch" style="background:var(--developed)"></span>developed (13)</span>
+          <span><span class="swatch" style="background:var(--emerging)"></span>emerging (9)</span>
+          <span><span class="swatch" style="background:var(--nullref)"></span>random-walk null (95th pct)</span>
+        </div>
+        <svg viewBox="-35 0 795 630" role="img" aria-label="Horizontal bar chart ranking all 22 equity indices by multiscaling strength B, with confidence intervals, colored by developed or emerging market status, showing emerging markets cluster toward higher values.">
+          <line x1="226" y1="36" x2="226" y2="612" stroke="currentColor" stroke-opacity="0.3"/>
+          <line x1="243.5" y1="36" x2="243.5" y2="612" stroke="var(--nullref)" stroke-dasharray="3,4" stroke-width="1.3"/>
+          <g font-family="IBM Plex Mono" font-size="10.5" fill="var(--ink-mute)">
+            <text x="226" y="28" text-anchor="middle">0</text>
+            <text x="302" y="28" text-anchor="middle">0.02</text>
+            <text x="378" y="28" text-anchor="middle">0.04</text>
+            <text x="454" y="28" text-anchor="middle">0.06</text>
+            <text x="530" y="28" text-anchor="middle">0.08</text>
+            <text x="700" y="28" text-anchor="middle">B</text>
+          </g>
+          <g font-family="IBM Plex Mono" font-size="11">
+          <text x="145" y="57" text-anchor="end" fill="var(--ink)">Malaysia (KLSE)</text>
+          <line x1="315.3" y1="53" x2="682.8" y2="53" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="46" width="298.6" height="14" fill="var(--emerging)"/>
+          <text x="145" y="83" text-anchor="end" fill="var(--ink)">Brazil (Bovespa)</text>
+          <line x1="254.9" y1="79" x2="450.2" y2="79" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="72" width="103.7" height="14" fill="var(--emerging)"/>
+          <text x="145" y="109" text-anchor="end" fill="var(--ink)">Hong Kong (Hang Seng)</text>
+          <line x1="276.7" y1="105" x2="402.5" y2="105" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="98" width="97.6" height="14" fill="var(--developed)"/>
+          <text x="145" y="135" text-anchor="end" fill="var(--ink)">India (Sensex)</text>
+          <line x1="278.0" y1="131" x2="406.4" y2="131" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="124" width="89.4" height="14" fill="var(--emerging)"/>
+          <text x="145" y="161" text-anchor="end" fill="var(--ink)">South Korea (KOSPI)</text>
+          <line x1="303.2" y1="157" x2="383.6" y2="157" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="150" width="89.1" height="14" fill="var(--emerging)"/>
+          <text x="145" y="187" text-anchor="end" fill="var(--ink)">Taiwan (TAIEX)</text>
+          <line x1="287.4" y1="183" x2="368.0" y2="183" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="176" width="82.7" height="14" fill="var(--emerging)"/>
+          <text x="145" y="213" text-anchor="end" fill="var(--ink)">Japan (Nikkei 225)</text>
+          <line x1="262.7" y1="209" x2="413.7" y2="209" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="202" width="81.1" height="14" fill="var(--developed)"/>
+          <text x="145" y="239" text-anchor="end" fill="var(--ink)">Mexico (IPC)</text>
+          <line x1="276.1" y1="235" x2="383.2" y2="235" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="228" width="80.8" height="14" fill="var(--emerging)"/>
+          <text x="145" y="265" text-anchor="end" fill="var(--ink)">Thailand (SET)</text>
+          <line x1="294.8" y1="261" x2="403.1" y2="261" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="254" width="80.1" height="14" fill="var(--emerging)"/>
+          <text x="145" y="291" text-anchor="end" fill="var(--ink)">Turkey (BIST 100)</text>
+          <line x1="283.6" y1="287" x2="398.1" y2="287" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="280" width="76.7" height="14" fill="var(--emerging)"/>
+          <text x="145" y="317" text-anchor="end" fill="var(--ink)">Switzerland (SMI)</text>
+          <line x1="255.6" y1="313" x2="386.1" y2="313" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="306" width="67.7" height="14" fill="var(--developed)"/>
+          <text x="145" y="343" text-anchor="end" fill="var(--ink)">United States (S&amp;P 500)</text>
+          <line x1="264.8" y1="339" x2="393.6" y2="339" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="332" width="64.4" height="14" fill="var(--developed)"/>
+          <text x="145" y="369" text-anchor="end" fill="var(--ink)">Indonesia (Jakarta Comp.)</text>
+          <line x1="274.5" y1="365" x2="391.9" y2="365" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="358" width="58.9" height="14" fill="var(--emerging)"/>
+          <text x="145" y="395" text-anchor="end" fill="var(--ink)">Canada (S&amp;P/TSX)</text>
+          <line x1="235.7" y1="391" x2="414.4" y2="391" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="384" width="48.0" height="14" fill="var(--developed)"/>
+          <text x="145" y="421" text-anchor="end" fill="var(--ink)">Spain (IBEX 35)</text>
+          <line x1="221.9" y1="417" x2="371.3" y2="417" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="410" width="33.4" height="14" fill="var(--developed)"/>
+          <text x="145" y="447" text-anchor="end" fill="var(--ink)">Netherlands (AEX)</text>
+          <line x1="237.7" y1="443" x2="359.4" y2="443" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="436" width="18.2" height="14" fill="var(--developed)"/>
+          <text x="145" y="473" text-anchor="end" fill="var(--ink)">France (CAC 40)</text>
+          <line x1="206.2" y1="469" x2="355.6" y2="469" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="462" width="17.0" height="14" fill="var(--developed)"/>
+          <text x="145" y="499" text-anchor="end" fill="var(--ink)">United Kingdom (FTSE 100)</text>
+          <line x1="210.1" y1="495" x2="366.4" y2="495" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="488" width="15.1" height="14" fill="var(--developed)"/>
+          <text x="145" y="525" text-anchor="end" fill="var(--ink)">Germany (DAX)</text>
+          <line x1="220.7" y1="521" x2="339.1" y2="521" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="226" y="514" width="12.4" height="14" fill="var(--developed)"/>
+          <text x="145" y="551" text-anchor="end" fill="var(--ink)">Austria (ATX)</text>
+          <line x1="176.1" y1="547" x2="365.8" y2="547" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="220.6" y="540" width="5.4" height="14" fill="var(--developed)"/>
+          <text x="145" y="577" text-anchor="end" fill="var(--ink)">Belgium (BEL 20)</text>
+          <line x1="206.2" y1="573" x2="357.2" y2="573" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="217.8" y="566" width="8.2" height="14" fill="var(--developed)"/>
+          <text x="145" y="603" text-anchor="end" fill="var(--ink)">Australia (ASX 200)</text>
+          <line x1="168.9" y1="599" x2="354.0" y2="599" stroke="var(--ink-mute)" stroke-width="1.2"/>
+          <rect x="205.2" y="592" width="20.8" height="14" fill="var(--developed)"/>
+          </g>
+        </svg>
+        <figcaption><b>Figure.</b> All 22 markets, sorted by B with 95% bootstrap intervals (grey whiskers). The dashed line is the 95th-percentile null from §5 — a market's bar has to clear it to be distinguishable from an ordinary random walk. <b>Every emerging market sits at or above the null; the bottom six are all developed.</b></figcaption>
+      </div>
+
+      <h3>11.2 — H(q) curves for four representative markets</h3>
+      <div class="figure">
+        <div class="legend">
+          <span><span class="swatch" style="background:#c9a227"></span>Malaysia — strongest multiscaling</span>
+          <span><span class="swatch" style="background:var(--emerging)"></span>Brazil — emerging, moderate</span>
+          <span><span class="swatch" style="background:var(--developed)"></span>United States — developed, mild</span>
+          <span><span class="swatch" style="background:var(--ink-mute)"></span>Australia — flattest / negative</span>
+        </div>
+        <svg viewBox="0 0 660 380" role="img" aria-label="Line chart of measured H(q) curves for four real markets: Malaysia falls steeply, Brazil falls moderately, the United States falls mildly, and Australia is flat to slightly rising.">
+          <g font-family="IBM Plex Mono" font-size="11" fill="var(--ink-mute)">
+            <line x1="50" y1="20" x2="50" y2="320" stroke="currentColor" stroke-opacity="0.35"/>
+            <line x1="50" y1="320" x2="620" y2="320" stroke="currentColor" stroke-opacity="0.35"/>
+            <text x="44" y="24" text-anchor="end">0.60</text>
+            <text x="44" y="124" text-anchor="end">0.50</text>
+            <text x="44" y="224" text-anchor="end">0.40</text>
+            <text x="44" y="324" text-anchor="end">0.30</text>
+            <text x="50" y="338" text-anchor="middle">0.5</text>
+            <text x="131" y="338" text-anchor="middle">1</text>
+            <text x="294" y="338" text-anchor="middle">2</text>
+            <text x="457" y="338" text-anchor="middle">3</text>
+            <text x="620" y="338" text-anchor="middle">4</text>
+            <text x="335" y="358" text-anchor="middle" font-size="12">q</text>
+          </g>
+          <line x1="50" y1="120" x2="620" y2="120" stroke="var(--nullref)" stroke-dasharray="3,4" stroke-width="1.3"/>
+          <polyline fill="none" stroke="var(--ink-mute)" stroke-width="2.2" points="50,119.3 90.7,124.4 131.4,128.9 172.1,132.5 212.9,135.1 253.6,136.6 294.3,136.8 335,135.6 375.7,133.0 416.4,129.3 457.1,124.6 497.9,119.3 538.6,113.9 579.3,108.5 620,103.6"/>
+          <polyline fill="none" stroke="var(--developed)" stroke-width="2.2" points="50,120.4 90.7,130.7 131.4,139.6 172.1,147.1 212.9,153.6 253.6,159.2 294.3,163.9 335,167.9 375.7,171.2 416.4,174.1 457.1,176.5 497.9,178.6 538.6,180.4 579.3,182.1 620,183.6"/>
+          <polyline fill="none" stroke="var(--emerging)" stroke-width="2.2" points="50,100.4 90.7,105.8 131.4,111.0 172.1,116.2 212.9,121.4 253.6,126.9 294.3,132.7 335,138.9 375.7,145.8 416.4,153.3 457.1,161.4 497.9,170.0 538.6,179.0 579.3,188.0 620,197.1"/>
+          <polyline fill="none" stroke="#c9a227" stroke-width="2.6" points="50,38.7 90.7,42.3 131.4,47.1 172.1,53.8 212.9,63.4 253.6,76.4 294.3,93.6 335,114.9 375.7,139.7 416.4,166.8 457.1,194.9 497.9,222.7 538.6,249.2 579.3,273.8 620,296.2"/>
+        </svg>
+        <figcaption><b>Figure.</b> Measured (not theoretical) H(q) for four real indices. Malaysia's curve falls by nearly 0.26 across the q-range — more than double any theoretical MRW curve plotted in §3 — a hint, confirmed in §7–10, that an extreme-event outlier rather than genuine dynamics is doing most of the work. Australia's curve is essentially flat — indistinguishable from a random walk.</figcaption>
+      </div>
+
+      <h3>11.3 — Is B just a kurtosis ranking in disguise?</h3>
+      <div class="figure">
+        <div class="legend">
+          <span><span class="swatch" style="background:var(--developed)"></span>developed</span>
+          <span><span class="swatch" style="background:var(--emerging)"></span>emerging</span>
+        </div>
+        <svg viewBox="0 0 600 300" role="img" aria-label="Scatter plot of multiscaling strength B against excess kurtosis on a log scale, showing a loose positive relationship with Malaysia as a clear outlier at extreme kurtosis and extreme B.">
+          <g font-family="IBM Plex Mono" font-size="10.5" fill="var(--ink-mute)">
+            <line x1="50" y1="20" x2="50" y2="260" stroke="currentColor" stroke-opacity="0.35"/>
+            <line x1="50" y1="260" x2="560" y2="260" stroke="currentColor" stroke-opacity="0.35"/>
+            <text x="85.7" y="274" text-anchor="middle">5</text>
+            <text x="196.4" y="274" text-anchor="middle">10</text>
+            <text x="307.0" y="274" text-anchor="middle">20</text>
+            <text x="417.8" y="274" text-anchor="middle">40</text>
+            <text x="528.4" y="274" text-anchor="middle">80</text>
+            <text x="305" y="294" text-anchor="middle" font-size="12">excess kurtosis (log scale)</text>
+            <text x="44" y="220" text-anchor="end">0</text>
+            <text x="44" y="129" text-anchor="end">0.04</text>
+            <text x="44" y="42" text-anchor="end">0.08</text>
+          </g>
+          <line x1="50" y1="216.4" x2="560" y2="216.4" stroke="currentColor" stroke-opacity="0.2"/>
+          <circle cx="63.2" cy="168.9" r="6" fill="var(--emerging)"/>
+          <circle cx="105.3" cy="209.3" r="6" fill="var(--developed)"/>
+          <circle cx="118.2" cy="170.0" r="6" fill="var(--emerging)"/>
+          <circle cx="121.0" cy="206.7" r="6" fill="var(--developed)"/>
+          <circle cx="127.8" cy="169.8" r="6" fill="var(--developed)"/>
+          <circle cx="131.9" cy="165.2" r="6" fill="var(--emerging)"/>
+          <circle cx="140.3" cy="206.0" r="6" fill="var(--developed)"/>
+          <circle cx="144.6" cy="177.5" r="6" fill="var(--developed)"/>
+          <circle cx="149.3" cy="172.4" r="6" fill="var(--emerging)"/>
+          <circle cx="149.7" cy="160.3" r="6" fill="var(--developed)"/>
+          <circle cx="152.8" cy="197.2" r="6" fill="var(--developed)"/>
+          <circle cx="153.2" cy="207.8" r="6" fill="var(--developed)"/>
+          <circle cx="159.4" cy="228.4" r="6" fill="var(--developed)"/>
+          <circle cx="177.0" cy="165.1" r="6" fill="var(--emerging)"/>
+          <circle cx="179.0" cy="219.6" r="6" fill="var(--developed)"/>
+          <circle cx="181.9" cy="182.9" r="6" fill="var(--emerging)"/>
+          <circle cx="183.3" cy="221.2" r="6" fill="var(--developed)"/>
+          <circle cx="198.2" cy="179.4" r="6" fill="var(--developed)"/>
+          <circle cx="211.3" cy="170.4" r="6" fill="var(--emerging)"/>
+          <circle cx="269.5" cy="188.9" r="6" fill="var(--developed)"/>
+          <circle cx="270.3" cy="156.8" r="6" fill="var(--emerging)"/>
+          <circle cx="539.9" cy="44.9" r="7" fill="#c9a227"/>
+          <text x="539.9" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="var(--ink-mute)">Malaysia</text>
+        </svg>
+        <figcaption><b>Figure.</b> B rises loosely with kurtosis — consistent with §7's warning and §10's regression — but it's a loose, noisy relationship, not a deterministic one: Canada (B=0.013) and Belgium (B=&minus;0.002) have similar kurtosis to several high-B emerging markets. Malaysia (gold) sits in a class of its own on both axes, which is why every table in §9 reports results with and without it.</figcaption>
+      </div>
+    </section>
+
+    <section id="functions">
+      <span class="tag">12 — Code, mapped to concept</span>
+      <h2>Every function, and the idea it implements</h2>
+      <p>The estimator lives in <code>src/ghe.py</code> (≈150 lines) and the validation processes in <code>src/synthetic.py</code>. Every function that does conceptual work, mapped to the section above that motivates it.</p>
+      <div class="func"><h4>structure_function(X, q, taus) &nbsp;/&nbsp; structure_functions(X, qs, taus)</h4>
+        <p class="does">Computes <code>S_q(τ) = mean(|X[t+τ] − X[t]|^q)</code> for one q or every q in <code>qs</code> at once. This is <a href="#structure">§2</a> turned into array code.</p>
+        <p class="why"><b>Why it matters:</b> everything downstream — H(q), B, the bootstrap, the shuffle test — is just this function called repeatedly on resampled or permuted versions of the same series.</p></div>
+      <div class="func"><h4>_ols(x, y) &nbsp;/&nbsp; _ols_many(x, Y)</h4>
+        <p class="does">Ordinary least squares — the plain straight-line fit, by closed-form formula rather than a library call, because the slope is wanted for many rows at once.</p>
+        <p class="why"><b>Why it matters:</b> the literal mechanism behind both nested fits in <a href="#hurst">§3</a> and <a href="#strength">§4</a> — the whole method is two straight-line fits, one inside the other.</p></div>
+      <div class="func"><h4>generalised_hurst(X, qs, tau_max, tau_min)</h4>
+        <p class="does">Runs <code>structure_functions</code>, takes logs, calls <code>_ols_many</code>, divides by q to recover H(q) (<a href="#hurst">§3</a>).</p>
+        <p class="why"><b>Why it matters:</b> this is the estimator itself — the one validated against known processes in <a href="#validate">§5</a> before being trusted on real markets.</p></div>
+      <div class="func"><h4>multiscaling_strength(qs, H) &nbsp;/&nbsp; h1_minus_h4(qs, H)</h4>
+        <p class="does">Fits <code>H(q)=A−Bq</code> (<a href="#strength">§4</a>) and returns B; the second reads off H(1)−H(2) by interpolation.</p>
+        <p class="why"><b>Why it matters:</b> turns a 15-point curve into the single ranking number used in every chart in <a href="#results">§11</a>.</p></div>
+      <div class="func"><h4>circular_block_bootstrap(increments, block, rng) &nbsp;/&nbsp; block_bootstrap(...)</h4>
+        <p class="does">Resamples whole blocks of daily increments with replacement, rebuilds a price path, re-estimates B — 500 times (<a href="#uncertainty">§8</a>).</p>
+        <p class="why"><b>Why it matters:</b> the confidence whiskers on every bar in <a href="#results">§11.1</a> come from here.</p></div>
+      <div class="func"><h4>shuffle_surrogates(X, qs, tau_max, n_surr, seed)</h4>
+        <p class="does">Randomly permutes individual daily increments, rebuilds a price path, re-estimates B — 500 times — the null behind <a href="#kurtosis">§7</a>–<a href="#mannwhitney">9</a>.</p>
+        <p class="why"><b>Why it matters:</b> the function behind the single most important finding in the project — that shuffled real markets <em>and</em> a shuffled MRW both show more multiscaling than the unshuffled version (<a href="#uncertainty">§8</a>'s twist).</p></div>
+      <div class="func"><h4>brownian_motion, fractional_bm, mrw &nbsp;<span style="color:var(--ink-mute);font-weight:400;">— synthetic.py</span></h4>
+        <p class="does">Three generators of fake price series with mathematically known H(q), of increasing sophistication: plain cumulative Gaussian noise; FFT-correlated Gaussian noise for long-range dependence; Gaussian noise multiplied by a log-correlated random volatility field for genuine multifractality.</p>
+        <p class="why"><b>Why it matters:</b> the known-answer test cases in <a href="#validate">§5</a> — without them, there's no way to know <code>generalised_hurst</code> is trustworthy before pointing it at real markets.</p></div>
+    </section>
+
+    <section id="builds">
+      <span class="tag">13 — Not a one-off</span>
+      <h2>Where this builds on earlier work</h2>
+      <p>The method is new; the <em>moves</em> this project makes are the same ones that show up across three earlier, unrelated-looking projects — the real argument for why this is evidence of transferable skill rather than a one-off replication.</p>
+      <div class="buildrow">
+        <div class="buildcard"><div class="from">Exeter group project<br><span style="color:var(--ink-mute)">CMIP6 sea-ice modelling</span></div>
+          <p>Thirty-five climate models filtered to twenty by a confidence-interval test, combined by model selection and an emergent-constraint regression, rather than trusting any single model's projection. <strong>Same move as here:</strong> don't trust one estimate — build a band, filter by a statistical criterion, check the answer survives across choices (§6's τ<sub>max</sub> grid is the direct descendant of that instinct).</p></div>
+        <div class="buildcard"><div class="from">Actuarial work<br><span style="color:var(--ink-mute)">stochastic pension modelling</span></div>
+          <p>The object of interest in multi-decade pension liability projection is the <em>tail</em> of the propagated distribution, not the central forecast. <strong>Same move as here:</strong> §7's whole argument is that the headline result lives in the tail moments (q&gt;2), which is precisely why it needs the same suspicion an actuary gives a tail-driven number.</p></div>
+        <div class="buildcard"><div class="from">Lincoln City FC<br><span style="color:var(--ink-mute)">tracking &amp; recruitment data</span></div>
+          <p>With 76% of opposition ratings missing, the recurring problem was distinguishing real structure in high-frequency, many-agent data from measurement artefact. <strong>Same move as here:</strong> §7–8's apparatus — the iid Student-t control, the shuffle surrogate — answers exactly that question for markets instead of match data.</p></div>
+      </div>
+      <p>Three different domains, one discipline: before reporting a pattern, build something with a known answer, check the method recovers it, then ask what would make the pattern fake before asking what it means if it's real.</p>
+    </section>
+
+    <section id="github">
+      <span class="tag">14 — Where this document lives</span>
+      <h2>What goes on GitHub</h2>
+      <p>The repository's existing <code>README.md</code> is already the right length for a GitHub landing page — headline, caveat, figures, in under two minutes. This document is the deep-dive for anyone who wants the reasoning rather than the conclusion.</p>
+      <div class="callout">
+        <span class="lbl">Suggested placement</span>
+        <p>Keep this as <code>docs/THEORY.md</code> (a Markdown twin ships alongside it) inside <code>multifractal/</code>, with one line near the top of <code>README.md</code> pointing to it. GitHub renders Markdown — including the <code>$...$</code> inline math used in the twin — natively, no build step needed.</p>
+      </div>
+    </section>
+
+    <div class="endnote">
+      Method: T. Di Matteo, <i>Multi-scaling in finance</i>, Quantitative Finance 7(1), 2007 · T. Di Matteo, T. Aste, M. M. Dacorogna, <i>Long-term memories of developed and emerging markets</i>, J. Banking &amp; Finance 29, 2005 · E. Bacry, J. Delour, J.-F. Muzy, <i>Multifractal random walk</i>, Phys. Rev. E 64, 026103, 2001 · J. Baruník, L. Kristoufek, <i>On Hurst exponent estimation under heavy-tailed distributions</i>, Physica A 389, 2010.<br>
+      All numbers on this page are read directly from <code>results/summary.csv</code>, <code>results/hq_curves.csv</code> and <code>results/controls.csv</code> in the project repository. The sandbox widgets above use a fixed 24-point toy series built for teaching, not real market data.
+    </div>
+
+  </article>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var ORD = [0.3,-0.5,0.2,0.8,-0.3,0.1,-0.6,0.4,-0.2,0.5,-0.4,0.3,-0.3,0.2,-0.5,0.4,-0.1,0.3,-0.4,0.2,-0.3,0.5,-0.2];
+  function series(shock){ return ORD.slice(0,12).concat([-shock]).concat(ORD.slice(12)); }
+  function mean(a){ return a.reduce(function(s,x){return s+x;},0)/a.length; }
+  function kurtosis(a){
+    var m=mean(a), n=a.length;
+    var v=a.reduce(function(s,x){return s+Math.pow(x-m,2);},0)/n;
+    var m4=a.reduce(function(s,x){return s+Math.pow(x-m,4);},0)/n;
+    return m4/(v*v)-3;
+  }
+  function contributions(a,q){
+    var absq=a.map(function(x){return Math.pow(Math.abs(x),q);});
+    var tot=absq.reduce(function(s,x){return s+x;},0);
+    return absq.map(function(x){return x/tot;});
+  }
+  function buildBars(gId, baseline){
+    var g=document.getElementById(gId); if(!g) return;
+    if (baseline === undefined) baseline = 140;
+    var barW=22, gap=4, x0=42;
+    for(var i=0;i<24;i++){
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x', x0+i*(barW+gap));
+      r.setAttribute('width', barW);
+      r.setAttribute('y', baseline); r.setAttribute('height', 0);
+      r.setAttribute('rx', 2);
+      r.setAttribute('fill', i===12 ? 'var(--emerging)' : 'var(--developed)');
+      r.id = gId+'_r'+i;
+      g.appendChild(r);
+    }
+  }
+  function setBars(gId, heights, baseline){
+    for(var i=0;i<24;i++){
+      var r=document.getElementById(gId+'_r'+i); if(!r) continue;
+      var h=heights[i];
+      r.setAttribute('height', h.toFixed(1));
+      r.setAttribute('y', (baseline-h).toFixed(1));
+    }
+  }
+  function widget(suffix){
+    var qEl=document.getElementById('q'+suffix), shockEl=document.getElementById('shock'+suffix);
+    if(!qEl||!shockEl) return;
+    function update(){
+      var q=parseFloat(qEl.value), shock=parseFloat(shockEl.value);
+      var s=series(shock);
+      var shares=contributions(s,q);
+      var maxShare=Math.max.apply(null,shares);
+      setBars('bars'+suffix, shares.map(function(v){return (v/maxShare)*110;}), 140);
+      var qo=document.getElementById('qOut'+suffix); if(qo) qo.textContent=q.toFixed(2);
+      var so=document.getElementById('shockOut'+suffix); if(so) so.textContent=shock.toFixed(1);
+      var shareOut=document.getElementById('shareOut'+suffix); if(shareOut) shareOut.textContent=(shares[12]*100).toFixed(1)+'%';
+      var kurtOut=document.getElementById('kurtOut'+suffix); if(kurtOut) kurtOut.textContent=kurtosis(s).toFixed(2);
+    }
+    qEl.addEventListener('input', update);
+    shockEl.addEventListener('input', update);
+    buildBars('bars'+suffix);
+    update();
+  }
+  widget('1'); widget('2');
+
+  // -------- original / shuffle / bootstrap demo (section 8) --------
+  var BASE_SHOCK = 6;
+  function renderSeq(gId, arr, baseline){
+    var cap=Math.max.apply(null, arr.map(Math.abs));
+    if(cap<=0) cap=1;
+    var heights=arr.map(function(v){return (Math.abs(v)/cap)*70;});
+    for(var i=0;i<24;i++){
+      var r=document.getElementById(gId+'_r'+i); if(!r) continue;
+      r.setAttribute('height', heights[i].toFixed(1));
+      r.setAttribute('y', (baseline-heights[i]).toFixed(1));
+      r.setAttribute('fill', Math.abs(arr[i])>=4 ? 'var(--emerging)' : 'var(--developed)');
+    }
+  }
+  buildBars('origBars', 90);
+  buildBars('resultBars', 90);
+  (function(){
+    for(var i=0;i<24;i++){
+      var r=document.getElementById('origBars_r'+i);
+      if(r){ r.setAttribute('width', r.getAttribute('width')); }
+    }
+  })();
+  var ORIGINAL = series(BASE_SHOCK);
+  renderSeq('origBars', ORIGINAL, 90);
+  var ok=document.getElementById('origKurt'); if(ok) ok.textContent=kurtosis(ORIGINAL).toFixed(2);
+
+  document.getElementById('shuffleBtn').addEventListener('click', function(){
+    var s=ORIGINAL.slice();
+    for(var i=s.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=s[i]; s[i]=s[j]; s[j]=t; }
+    renderSeq('resultBars', s, 90);
+    document.getElementById('resultCaption').innerHTML = 'shuffled order — kurtosis <b style="color:var(--ink)">'+kurtosis(s).toFixed(2)+'</b> (compare to original '+kurtosis(ORIGINAL).toFixed(2)+')';
+  });
+  document.getElementById('bootBtn').addEventListener('click', function(){
+    var n=ORIGINAL.length, block=4, nblocks=Math.ceil(n/block), out=[];
+    for(var b=0;b<nblocks;b++){
+      var start=Math.floor(Math.random()*n);
+      for(var k=0;k<block;k++){ out.push(ORIGINAL[(start+k)%n]); }
+    }
+    out=out.slice(0,n);
+    renderSeq('resultBars', out, 90);
+    document.getElementById('resultCaption').innerHTML = 'block-resampled — kurtosis <b style="color:var(--ink)">'+kurtosis(out).toFixed(2)+'</b> (compare to original '+kurtosis(ORIGINAL).toFixed(2)+')';
+  });
+
+  // -------- tau_max fitting demo (section 6) --------
+  var LNTAU=[0,.693,1.099,1.386,1.609,1.792,1.946,2.079,2.197,2.303,2.398,2.485,2.565,2.639,2.708];
+  var LOGS=[0.25,0.504,1.269,1.297,1.648,1.593,1.891,1.891,2.137,2.143,2.278,2.587,2.759,2.895,3.087];
+  function txX(lnt){ return 50+(lnt/2.708)*490; }
+  function txY(v){ return 20+(3.3-v)/3.3*220; }
+  (function(){
+    var g=document.getElementById('taupoints');
+    for(var i=0;i<15;i++){
+      var c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', txX(LNTAU[i]).toFixed(1));
+      c.setAttribute('cy', txY(LOGS[i]).toFixed(1));
+      c.setAttribute('r', 5);
+      c.setAttribute('fill', 'var(--developed)');
+      c.id='taupt'+i;
+      g.appendChild(c);
+    }
+  })();
+  function ols(xs,ys){
+    var n=xs.length, xm=mean(xs), ym=mean(ys), sxx=0, sxy=0;
+    for(var i=0;i<n;i++){ sxx+=Math.pow(xs[i]-xm,2); sxy+=(xs[i]-xm)*(ys[i]-ym); }
+    var b=sxy/sxx, a=ym-b*xm, rss=0;
+    for(i=0;i<n;i++){ rss+=Math.pow(ys[i]-(a+b*xs[i]),2); }
+    var se = n>2 ? Math.sqrt((rss/(n-2))/sxx) : NaN;
+    return {a:a,b:b,se:se};
+  }
+  var taumaxSlider=document.getElementById('taumaxSlider');
+  function updateTau(){
+    var n=parseInt(taumaxSlider.value,10);
+    document.getElementById('taumaxOut').textContent=n;
+    for(var i=0;i<15;i++){
+      var c=document.getElementById('taupt'+i);
+      c.setAttribute('opacity', i<n ? 1 : 0.22);
+    }
+    var xs=LNTAU.slice(0,n), ys=LOGS.slice(0,n);
+    var fit=ols(xs,ys);
+    var x1=LNTAU[0], x2=LNTAU[n-1];
+    var line=document.getElementById('taufit');
+    line.setAttribute('x1', txX(x1).toFixed(1)); line.setAttribute('y1', txY(fit.a+fit.b*x1).toFixed(1));
+    line.setAttribute('x2', txX(x2).toFixed(1)); line.setAttribute('y2', txY(fit.a+fit.b*x2).toFixed(1));
+    document.getElementById('slopeOut').textContent = fit.b.toFixed(3);
+    document.getElementById('seOut').textContent = isNaN(fit.se) ? '—' : ('±'+fit.se.toFixed(3));
+  }
+  taumaxSlider.addEventListener('input', updateTau);
+  updateTau();
+})();
+</script>
